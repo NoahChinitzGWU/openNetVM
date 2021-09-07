@@ -61,4 +61,115 @@
 #include "onvm_pkt_helper.h"
 #include "onvm_common.h"
 
-#define NF_TAG "NAT"
+#define NF_TAG "nat"
+
+/*
+ * Print a usage message
+ */
+static void
+usage(const char *progname) {
+        printf("Usage:\n");
+        printf("%s [EAL args] -- [NF_LIB args]\n", progname);
+}
+
+/*
+ * Parse the application arguments.
+ */
+static int
+parse_app_args(int argc, char *argv[], const char *progname, __attribute__((unused)) struct onvm_nf *nf) {
+        int c;
+        while ((c = getopt(argc, argv, "p:")) != -1) {
+                switch (c) {
+                        case '?':
+                                usage(progname);
+                                if (optopt == 'p')
+                                        RTE_LOG(INFO, APP, "Option -%c requires an argument.\n", optopt);
+                                else if (isprint(optopt))
+                                        RTE_LOG(INFO, APP, "Unknown option `-%c'.\n", optopt);
+                                else
+                                        RTE_LOG(INFO, APP, "Unknown option character `\\x%x'.\n", optopt);
+                                return -1;
+                        default:
+                                usage(progname);
+                                return -1;
+                }
+        }
+        return optind;
+}
+
+/*
+ * 
+ */
+void
+nf_setup(struct onvm_nf_local_ctx *nf_local_ctx) {
+
+}
+
+/*
+ * 
+ */
+static int
+test_handler(struct onvm_nf_local_ctx *nf_local_ctx) {
+
+}
+
+/*
+ * 
+ */
+void
+nf_msg_handler(void *msg_data, struct onvm_nf_local_ctx *nf_local_ctx) {
+        
+}
+
+/*
+ * 
+ */
+static int
+packet_handler(__attribute__((unused)) struct rte_mbuf *pkt, struct onvm_pkt_meta *meta,
+               __attribute__((unused)) struct onvm_nf_local_ctx *nf_local_ctx) {
+        meta->action = ONVM_NF_ACTION_DROP;
+        return 0;
+}
+
+/*
+ * Creates function table and local context. Runs NF.
+ */
+int
+main(int argc, char *argv[]) {
+        int arg_offset;
+        struct onvm_nf_local_ctx *nf_local_ctx;
+        struct onvm_nf_function_table *nf_function_table;
+        const char *progname = argv[0];
+
+        nf_local_ctx = onvm_nflib_init_nf_local_ctx();
+        onvm_nflib_start_signal_handler(nf_local_ctx, NULL);
+
+        nf_function_table = onvm_nflib_init_nf_function_table();
+        nf_function_table->pkt_handler = &packet_handler;
+        nf_function_table->setup = &nf_setup;
+        nf_function_table->msg_handler = &nf_msg_handler;
+        nf_function_table->user_actions = &test_handler;
+
+        if ((arg_offset = onvm_nflib_init(argc, argv, NF_TAG, nf_local_ctx, nf_function_table)) < 0) {
+                onvm_nflib_stop(nf_local_ctx);
+                if (arg_offset == ONVM_SIGNAL_TERMINATION) {
+                        printf("Exiting due to user termination\n");
+                        return 0;
+                } else {
+                        rte_exit(EXIT_FAILURE, "Failed ONVM init\n");
+                }
+        }
+
+        argc -= arg_offset;
+        argv += arg_offset;
+
+        if (parse_app_args(argc, argv, progname, nf_local_ctx->nf) < 0) {
+                onvm_nflib_stop(nf_local_ctx);
+                rte_exit(EXIT_FAILURE, "Invalid command-line arguments\n");
+        }
+
+        onvm_nflib_run(nf_local_ctx);
+        onvm_nflib_stop(nf_local_ctx);
+
+        return 0;
+}

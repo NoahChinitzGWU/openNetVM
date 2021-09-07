@@ -44,7 +44,7 @@ include $(RTE_SDK)/mk/rte.vars.mk
 RTE_TARGET ?= x86_64-native-linuxapp-gcc
 
 # binary name
-APP = NAT
+APP = nat
 
 # all source are stored in SRCS-y
 SRCS-y := nat.c
