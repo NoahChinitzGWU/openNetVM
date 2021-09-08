@@ -61,7 +61,13 @@
 #include "onvm_pkt_helper.h"
 #include "onvm_common.h"
 
-#define NF_TAG "nat"
+#define NF_TAG "NAT"
+
+void
+nf_setup(struct onvm_nf_local_ctx *nf_local_ctx);
+
+void
+nf_msg_handler(void *msg_data, struct onvm_nf_local_ctx *nf_local_ctx);
 
 /*
  * Print a usage message
@@ -101,7 +107,7 @@ parse_app_args(int argc, char *argv[], const char *progname, __attribute__((unus
  * 
  */
 void
-nf_setup(struct onvm_nf_local_ctx *nf_local_ctx) {
+nf_setup(__attribute__((unused))struct onvm_nf_local_ctx *nf_local_ctx) {
 
 }
 
@@ -109,15 +115,15 @@ nf_setup(struct onvm_nf_local_ctx *nf_local_ctx) {
  * 
  */
 static int
-test_handler(struct onvm_nf_local_ctx *nf_local_ctx) {
-
+test_handler(__attribute__((unused))struct onvm_nf_local_ctx *nf_local_ctx) {
+        return 0;
 }
 
 /*
  * 
  */
 void
-nf_msg_handler(void *msg_data, struct onvm_nf_local_ctx *nf_local_ctx) {
+nf_msg_handler(__attribute__((unused))void *msg_data, __attribute__((unused))struct onvm_nf_local_ctx *nf_local_ctx) {
         
 }
 
